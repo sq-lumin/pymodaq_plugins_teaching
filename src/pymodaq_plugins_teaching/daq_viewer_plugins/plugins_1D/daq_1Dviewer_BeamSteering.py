@@ -7,7 +7,7 @@ from easydict import EasyDict as edict
 from collections import OrderedDict
 from pymodaq.daq_utils.daq_utils import ThreadCommand, getLineInfo, DataFromPlugins, Axis, my_moment
 from pymodaq.daq_viewer.utility_classes import comon_parameters
-from pymodaq_plugins_pid.hardware.beamsteering import BeamSteeringController
+from pymodaq_plugins_teaching.hardware.beamsteering import BeamSteeringController
 from scipy.ndimage.measurements import center_of_mass
 
 class DAQ_1DViewer_BeamSteering(DAQ_Viewer_base):
