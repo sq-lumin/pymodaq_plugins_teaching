@@ -1,28 +1,71 @@
 import numpy as np
 from pymodaq.daq_utils.daq_utils import gauss1D
+from typing import List, Union
+from collections.abc import Iterable
+from numbers import Number
+import math
+from time import perf_counter
+
 
 class Spectrometer:
 
-    axis = ['lambda0']
     gratings = ['G300', 'G1200']
 
-    Nactuators = len(axis)
     Nx = 256
-    infos = 'Spectrometer Controller Wrapper 0.0.1'
+    infos = 'Spectrometer Controller Wrapper 0.1.0'
 
-    def __init__(self, positions=[632.], noise=0.1, amp=10, wh=20, grating=gratings[0]):
+    def __init__(self):
         super().__init__()
-        if positions is None:
-            self.current_positions = dict(zip(self.axis, [0. for ind in range(self.Nactuators)]))
-        else:
-            assert isinstance(positions, list)
-            assert len(positions) == self.Nactuators
-            self.current_positions = dict(zip(self.axis, positions))
 
-        self._amp = amp
-        self._noise = noise
-        self._wh = wh
-        self._grating = grating
+        self._amp = 10
+        self._noise = 0.5
+        self._wh = 2
+        self._grating = self.gratings[0]
+
+        self._tau = 2  # s
+        self._alpha = None
+        self._init_value = None
+        self._start_time = 0
+        self._moving = False
+        self._espilon = 0.01
+
+        self._lambda = 532
+        self._target_lambda = self._lambda
+
+        self._lambda0 = 528
+
+    def open_communication(self):
+        return True
+
+    def close_communication(self):
+        return True
+
+    def stop(self):
+        self._moving = False
+
+    @property
+    def tau(self):
+        """
+        fetch the characteristic time to reach a particular wavelength
+        Returns
+        -------
+        float: the current characteristic decay time value
+
+        """
+        return self._tau
+
+    @tau.setter
+    def tau(self, value):
+        """
+        Set the characteristic time to reach a particular wavelength
+        Parameters
+        ----------
+        value: (float) a strictly positive characteristic time in seconds
+        """
+        if value <= 0:
+            raise ValueError(f'A characteristic time of {value} is not possible. It should be strictly positive')
+        else:
+            self._tau = value
 
     @property
     def grating(self):
@@ -60,47 +103,87 @@ class Spectrometer:
         if value > 0.:
             self._wh = value
 
-    def set_wavelength(self, value, set_type='abs'):
-        if value < 0:
-            raise ValueError('Wavelength cannot be negative')
+    def find_reference(self):
+        self.set_wavelength(600, 'abs')
 
+    def set_wavelength(self, value, set_type='abs'):
+        if set_type == 'abs' and value < 0:
+            raise ValueError('Wavelength cannot be negative')
         if set_type == 'abs':
-            self.current_positions['lambda0'] = value
+            self._target_lambda = value
         else:
-            self.current_positions['lambda0'] += value
+            self._target_lambda = self._lambda + value
+
+        self._init_value = self._lambda
+        if self._init_value != self._target_lambda:
+            self._alpha = math.fabs(math.log(self._espilon / math.fabs(self._init_value - self._target_lambda)))
+        else:
+            self._alpha = math.fabs(math.log(self._espilon / 10))
+        self._start_time = perf_counter()
+        self._moving = True
 
     def get_wavelength(self):
-        return self.current_positions['lambda0']
+        if self._moving:
+            curr_time = perf_counter()
+            self._lambda = \
+                math.exp(- self._alpha * (curr_time-self._start_time) / self._tau) *\
+                (self._init_value - self._target_lambda) + self._target_lambda
+        return self._lambda
 
-    def get_xaxis(self):
+    def get_wavelength_axis(self):
         if self._grating == 'G300':
             coeff = 0.7
         elif self._grating == 'G1200':
             coeff = 0.25
-        return (np.linspace(0, self.Nx, self.Nx, endpoint=False) - self.Nx / 2) * coeff +\
-               self.current_positions['lambda0']
+        return (np.linspace(0, self.Nx, self.Nx, endpoint=False) - self.Nx / 2) * coeff + self._lambda
 
-    def set_Mock_data(self):
-        """
-        """
-        x_axis = self.get_xaxis()
-        return self._amp * gauss1D(x_axis, self.current_positions['lambda0'], self._wh) +\
-               self._noise * np.random.rand(self.Nx)
+    @property
+    def data_wavelength(self,):
+        return self._lambda0
 
-    def get_data_output(self, data=None):
-        """
-        Return generated data (2D gaussian) transformed depending on the parameters
+    @data_wavelength.setter
+    def data_wavelength(self, lambda0):
+        """Defines the center wavelength of the spectrum peak to be measured"""
+        if lambda0 < 0:
+            raise ValueError('Wavelength cannot be negative')
+        self._lambda0 = lambda0
+
+    def _set_data_response(self, lambda_axis: Union[float, Iterable] = 515) -> np.ndarray:
+        """Defines the wavelength response along
+
         Parameters
         ----------
-        data: (ndarray) data as outputed by set_Mock_data
+        lambda_axis: float or iterable of floats
 
         Returns
         -------
-        numpy nd-array
+        ndarray
+        """
+        if isinstance(lambda_axis, Number):
+            lambda_axis = np.array([lambda_axis])
+        else:
+            if not isinstance(lambda_axis, Iterable):
+                raise TypeError('lambda_axis should be an iterable of float')
+            else:
+                if not isinstance(lambda_axis[0], Number):
+                    raise TypeError('lambda_axis should be an iterable of float')
+
+        return self._amp * gauss1D(lambda_axis, self._lambda0, self._wh) + self._noise * np.random.rand(len(lambda_axis))
+
+    def _get_data_0D(self, data=None):
+        if data is None:
+            data = self._set_data_response(self.get_wavelength())
+        return data
+
+    def _get_data_1D(self, data=None):
+        """
         """
         if data is None:
-            data = self.set_Mock_data()
+            data = self._set_data_response(self.get_wavelength_axis())
         return data
 
     def grab_spectrum(self):
-        return self.get_data_output()
+        return self._get_data_1D()
+
+    def grab_monochromator(self):
+        return self._get_data_0D()
