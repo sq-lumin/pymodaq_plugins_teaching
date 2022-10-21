@@ -1,5 +1,5 @@
 import numpy as np
-from pymodaq.daq_utils.daq_utils import gauss1D
+from pymodaq.daq_utils.math_utils import gauss1D
 from typing import List, Union
 from collections.abc import Iterable
 from numbers import Number
@@ -84,6 +84,8 @@ class Spectrometer:
     def amplitude(self, value):
         if value > 0.:
             self._amp = value
+        if value > 100:
+            self._amp = 100
 
     @property
     def noise(self):
