@@ -8,7 +8,10 @@ from time import perf_counter
 
 
 class Spectrometer:
+    """Mock Controller of a spectrometer
 
+    Allows to change the used grating, to move the grating by setting the central wavelength and get the data out of it
+    """
     gratings = ['G300', 'G1200']
 
     Nx = 256
@@ -69,6 +72,7 @@ class Spectrometer:
 
     @property
     def grating(self):
+        """Get.set the current grating in the spectrometer"""
         return self._grating
 
     @grating.setter
@@ -78,6 +82,7 @@ class Spectrometer:
 
     @property
     def amplitude(self):
+        """Get/Set the amplitude of the measured spectrum"""
         return self._amp
 
     @amplitude.setter
@@ -89,6 +94,7 @@ class Spectrometer:
 
     @property
     def noise(self):
+        """Get/Set the noise of the measured spectrum"""
         return self._noise
 
     @noise.setter
@@ -98,6 +104,7 @@ class Spectrometer:
 
     @property
     def width(self):
+        """Get/Set the width of the measured spectrum main peak"""
         return self._wh
 
     @width.setter
@@ -106,9 +113,11 @@ class Spectrometer:
             self._wh = value
 
     def find_reference(self):
+        """Simulate the moving of the grating into a known "limit" for absolute positioning"""
         self.set_wavelength(600, 'abs')
 
     def set_wavelength(self, value, set_type='abs'):
+        """Move the grating to set the central wavelength out of the spectrometer"""
         if set_type == 'abs' and value < 0:
             raise ValueError('Wavelength cannot be negative')
         if set_type == 'abs':
@@ -125,6 +134,7 @@ class Spectrometer:
         self._moving = True
 
     def get_wavelength(self):
+        """Get the current central wavelength in the spectrometer"""
         if self._moving:
             curr_time = perf_counter()
             self._lambda = \
@@ -133,6 +143,8 @@ class Spectrometer:
         return self._lambda
 
     def get_wavelength_axis(self):
+        """Get the wavelength axis out of the spectrometer (dependent of the central wavelength (grating position))
+        and dispersion of the selected grating"""
         if self._grating == 'G300':
             coeff = 0.7
         elif self._grating == 'G1200':
@@ -141,6 +153,7 @@ class Spectrometer:
 
     @property
     def data_wavelength(self,):
+        """Central wavelength of the physical feature measured by our spectrometer"""
         return self._lambda0
 
     @data_wavelength.setter
@@ -151,7 +164,7 @@ class Spectrometer:
         self._lambda0 = lambda0
 
     def _set_data_response(self, lambda_axis: Union[float, Iterable] = 515) -> np.ndarray:
-        """Defines the wavelength response along
+        """Defines the wavelength response of the physical process measured by our spectrometer
 
         Parameters
         ----------
@@ -173,19 +186,22 @@ class Spectrometer:
         return self._amp * gauss1D(lambda_axis, self._lambda0, self._wh) + self._noise * np.random.rand(len(lambda_axis))
 
     def _get_data_0D(self, data=None):
+        """Get the data at the central wavelength of the spectrometer"""
         if data is None:
             data = self._set_data_response(self.get_wavelength())
         return data
 
     def _get_data_1D(self, data=None):
-        """
+        """Get the data as a function of the wavelength axis of the spectrometer
         """
         if data is None:
             data = self._set_data_response(self.get_wavelength_axis())
         return data
 
     def grab_spectrum(self):
+        """get the intensity spectrum out of the spectrometer"""
         return self._get_data_1D()
 
     def grab_monochromator(self):
+        """get the intensity at the central wavelength"""
         return self._get_data_0D()
