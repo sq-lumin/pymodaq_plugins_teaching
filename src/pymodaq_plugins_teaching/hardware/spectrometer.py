@@ -1,5 +1,5 @@
 import numpy as np
-from pymodaq.daq_utils.math_utils import gauss1D
+from pymodaq.utils.math_utils import gauss1D
 from typing import List, Union
 from collections.abc import Iterable
 from numbers import Number
