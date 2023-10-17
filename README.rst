@@ -12,6 +12,10 @@ PyMoDAQ Plugins Teaching
 .. image:: https://github.com/PyMoDAQ/pymodaq_plugins_teaching/workflows/Upload%20Python%20Package/badge.svg
     :target: https://github.com/PyMoDAQ/pymodaq_plugins_teaching
 
+.. image:: https://github.com/PyMoDAQ/pymodaq_plugins_teaching/actions/workflows/Test.yml/badge.svg
+    :target: https://github.com/PyMoDAQ/pymodaq_plugins_teaching/actions/workflows/Test.yml
+
+
 PyMoDAQ plugins developed specifically to teach how to create new plugins
 
 
