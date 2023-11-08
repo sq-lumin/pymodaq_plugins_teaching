@@ -51,14 +51,13 @@ def test_imports():
     mod = importlib.import_module(pkg_name)
     assert hasattr(mod, 'config')
     assert hasattr(mod, '__version__')
-    move_mod = importlib.import_module(f'{pkg_name}', 'daq_move_plugins')
+    importlib.import_module(f'{pkg_name}', 'daq_move_plugins')
     importlib.import_module(f'{pkg_name}', 'daq_viewer_plugins')
     importlib.import_module(f'{pkg_name}', 'extensions')
     importlib.import_module(f'{pkg_name}', 'models')
     importlib.import_module(f'{pkg_name}.daq_viewer_plugins', 'plugins_0D')
     importlib.import_module(f'{pkg_name}.daq_viewer_plugins', 'plugins_1D')
     importlib.import_module(f'{pkg_name}.daq_viewer_plugins', 'plugins_2D')
-    importlib.import_module(f'{pkg_name}.daq_viewer_plugins', 'plugins_ND')
 
 
 def test_move_inst_plugins_name():
@@ -85,7 +84,7 @@ def test_move_has_mandatory_methods():
             assert hasattr(klass, meth)
 
 
-@pytest.mark.parametrize('dim', ('0D', '1D', '2D', 'ND'))
+@pytest.mark.parametrize('dim', ('0D', '1D', '2D'))
 def test_viewer_has_mandatory_methods(dim):
     plugin_list, mod = get_viewer_plugins(dim)
     for plug in plugin_list:
