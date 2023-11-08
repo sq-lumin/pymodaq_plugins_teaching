@@ -8,7 +8,7 @@ PLUGIN_NAME = f"pymodaq_plugins_{SHORT_PLUGIN_NAME}"
 
 from pathlib import Path
 
-with open(str(Path(__file__).parent.joinpath(f'src/{PLUGIN_NAME}/VERSION')), 'r') as fvers:
+with open(str(Path(__file__).parent.joinpath(f'src/{PLUGIN_NAME}/resources/VERSION')), 'r') as fvers:
     version = fvers.read().strip()
 
 
@@ -51,6 +51,7 @@ if 'features' in config:
         entrypoints['pymodaq.scanners'] = f'{SHORT_PLUGIN_NAME} = {PLUGIN_NAME}'
 else:
     entrypoints['pymodaq.instruments'] = f'{SHORT_PLUGIN_NAME} = {PLUGIN_NAME}'
+entrypoints['pymodaq.plugins'] = f'{SHORT_PLUGIN_NAME} = {PLUGIN_NAME}'  # generic plugin, usefull for the plugin manager
 
 setup(
     version=version,
