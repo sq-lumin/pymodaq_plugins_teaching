@@ -94,7 +94,7 @@ class Keithley2110:
         """
         if not self.is_open:
             raise TimeoutError
-        if function not in self.measurements.names():
+        if function not in Measurement.names():
             warnings.warn(f'The requested measurement, {function} cannot be set')
         else:
             self.measurement = Measurement[function]
