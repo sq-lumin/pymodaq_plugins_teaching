@@ -4,7 +4,7 @@ SHORT_PLUGIN_NAME = 'teaching'
 package-url = 'https://github.com/PyMoDAQ/pymodaq_plugins_teaching'
 description = 'Set of base PyMoDAQ plugins including Mock ones for teaching purpose'
 
-author = 'Sébastien Weber'
+author = 'Sébastien J. Weber'
 author-email = 'sebastien.weber@cemes.fr'
 
 [plugin-install]
