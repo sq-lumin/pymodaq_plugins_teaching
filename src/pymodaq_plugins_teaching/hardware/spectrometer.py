@@ -202,6 +202,12 @@ class Spectrometer:
         """get the intensity spectrum out of the spectrometer"""
         return self._get_data_1D()
 
+    def grab_image(self):
+        y_axis_array = np.linspace(0, 127, 128)
+        data1D = self._get_data_1D()
+        data2D = np.outer(gauss1D(y_axis_array, np.mean(y_axis_array), 50), data1D)
+        return data2D
+
     def grab_monochromator(self):
         """get the intensity at the central wavelength"""
         return self._get_data_0D()
