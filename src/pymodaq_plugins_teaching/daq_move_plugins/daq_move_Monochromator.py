@@ -26,12 +26,9 @@ class DAQ_Move_Monochromator(DAQ_Move_base):
 
     Attributes:
     -----------
-    controller: object
+    controller: Spectrometer
         The particular object that allow the communication with the hardware, in general a python wrapper around the
          hardware library.
-         
-    # TODO add your particular attributes here if any
-
     """
     _controller_units = 'nm'
     is_multiaxes = False
@@ -52,9 +49,6 @@ class DAQ_Move_Monochromator(DAQ_Move_base):
 
     def ini_attributes(self):
         self.controller: Spectrometer | None = None
-
-        #TODO declare here attributes you want/need to init with a default value
-        pass
 
     def get_actuator_value(self):
         """Get the current value from the hardware with scaling conversion.
@@ -101,6 +95,8 @@ class DAQ_Move_Monochromator(DAQ_Move_base):
         """
         self.controller = self.ini_stage_init(old_controller=controller,
                                               new_controller=Spectrometer())
+
+        self.settings.child('tau').setValue(self.controller.tau)
 
         info = "Monochromator initialized"
         initialized = self.controller.open_communication()
