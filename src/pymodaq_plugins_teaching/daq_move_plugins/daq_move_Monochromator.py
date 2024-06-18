@@ -62,10 +62,8 @@ class DAQ_Move_Monochromator(DAQ_Move_base):
         -------
         float: The position obtained after scaling conversion.
         """
-        ## TODO for your custom plugin
-        raise NotImplemented  # when writing your own plugin remove this line
         pos = DataActuator(
-            data=self.controller.your_method_to_get_the_actuator_value())  # when writing your own plugin replace this line
+            data=self.controller.get_wavelength())  # when writing your own plugin replace this line
         pos = self.get_position_with_scaling(pos)
         return pos
 
