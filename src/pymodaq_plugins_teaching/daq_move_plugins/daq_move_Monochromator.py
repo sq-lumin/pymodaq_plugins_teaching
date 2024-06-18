@@ -3,7 +3,12 @@ from pymodaq.control_modules.move_utility_classes import DAQ_Move_base, comon_pa
 from pymodaq.utils.daq_utils import ThreadCommand  # object used to send info back to the main thread
 from pymodaq.utils.parameter import Parameter
 from pymodaq_plugins_teaching.hardware.spectrometer import Spectrometer
-
+# to import config from toml:
+# from pymodaq_plugins_teaching.utils import Config
+# config = Config()
+# tau = config('tau')
+# OR
+# tau = config.to_dict()['tau']
 
 # TODO:
 # (1) change the name of the following class to DAQ_Move_TheNameOfYourChoice
