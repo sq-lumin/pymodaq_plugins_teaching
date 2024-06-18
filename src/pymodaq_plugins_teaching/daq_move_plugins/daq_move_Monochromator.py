@@ -44,7 +44,7 @@ class DAQ_Move_Monochromator(DAQ_Move_base):
     params = [
                  {'title': 'Grating', 'name': 'grating', 'type': 'list', 'limits': Spectrometer.gratings},
                  {'title': 'Infos', 'name': 'infos', 'type': 'str', 'value': Spectrometer.infos, 'readonly': True},
-                 {'title': 'Tau', 'name': 'tau', 'type': 'float', 'value': Spectrometer.tau, 'readonly': True},
+                 {'title': 'Tau', 'name': 'tau', 'type': 'float', 'value': 0},
              ] + comon_parameters_fun(is_multiaxes, axis_names=_axis_names, epsilon=_epsilon)
 
     # _epsilon is the initial default value for the epsilon parameter allowing pymodaq to know if the controller reached
