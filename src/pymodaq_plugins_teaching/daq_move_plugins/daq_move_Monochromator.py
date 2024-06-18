@@ -40,9 +40,11 @@ class DAQ_Move_Monochromator(DAQ_Move_base):
     data_actuator_type = DataActuatorType[
         'DataActuator']  # wether you use the new data style for actuator otherwise set this
     # as  DataActuatorType['float']  (or entirely remove the line)
-    GRATINGS = Spectrometer.gratings
+
     params = [
-                 {'title': 'Grating', 'name': 'grating', 'type': 'list', 'limits': GRATINGS},
+                 {'title': 'Grating', 'name': 'grating', 'type': 'list', 'limits': Spectrometer.gratings},
+                 {'title': 'Infos', 'name': 'infos', 'type': 'str', 'value': Spectrometer.infos, 'readonly': True},
+                 {'title': 'Tau', 'name': 'tau', 'type': 'float', 'value': Spectrometer.tau, 'readonly': True},
              ] + comon_parameters_fun(is_multiaxes, axis_names=_axis_names, epsilon=_epsilon)
 
     # _epsilon is the initial default value for the epsilon parameter allowing pymodaq to know if the controller reached
@@ -80,8 +82,8 @@ class DAQ_Move_Monochromator(DAQ_Move_base):
         """
         if param.name() == "grating":
             self.controller.grating = param.value()
-        else:
-            pass
+        elif param.name() == "tau":
+            self.controller.tau = param.value()
 
     def ini_stage(self, controller: Spectrometer = None):
         """Actuator communication initialization
