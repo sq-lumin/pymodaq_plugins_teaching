@@ -42,7 +42,7 @@ class DAQ_Move_Monochromator(DAQ_Move_base):
     # as  DataActuatorType['float']  (or entirely remove the line)
     GRATINGS = Spectrometer.gratings
     params = [
-                 {'title': 'Grating', 'name': 'grating', 'type': 'list', 'values': GRATINGS},
+                 {'title': 'Grating', 'name': 'grating', 'type': 'list', 'limits': GRATINGS},
              ] + comon_parameters_fun(is_multiaxes, axis_names=_axis_names, epsilon=_epsilon)
 
     # _epsilon is the initial default value for the epsilon parameter allowing pymodaq to know if the controller reached
