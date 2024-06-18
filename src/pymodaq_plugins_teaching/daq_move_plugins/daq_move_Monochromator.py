@@ -79,7 +79,7 @@ class DAQ_Move_Monochromator(DAQ_Move_base):
             A given parameter (within detector_settings) whose value has been changed by the user
         """
         if param.name() == "grating":
-            self.controller.grating =
+            self.controller.grating = param.value()
         else:
             pass
 
