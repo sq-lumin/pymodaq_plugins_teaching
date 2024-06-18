@@ -33,10 +33,10 @@ class DAQ_Move_Monochromator(DAQ_Move_base):
     # TODO add your particular attributes here if any
 
     """
-    _controller_units = 'whatever'  # TODO for your plugin: put the correct unit here
-    is_multiaxes = False  # TODO for your plugin set to True if this plugin is controlled for a multiaxis controller
-    _axis_names = ['Axis1', 'Axis2']  # TODO for your plugin: complete the list
-    _epsilon = 0.1  # TODO replace this by a value that is correct depending on your controller
+    _controller_units = 'nm'
+    is_multiaxes = False
+    _axis_names = ['Wavelength']
+    _epsilon = 0.1
     data_actuator_type = DataActuatorType[
         'DataActuator']  # wether you use the new data style for actuator otherwise set this
     # as  DataActuatorType['float']  (or entirely remove the line)
