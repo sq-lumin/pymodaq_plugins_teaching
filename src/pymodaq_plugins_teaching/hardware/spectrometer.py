@@ -1,4 +1,5 @@
 import numpy as np
+from qtpy.QtCore import QThread
 from pymodaq.utils.math_utils import gauss1D
 from typing import List, Union
 from collections.abc import Iterable
@@ -211,3 +212,11 @@ class Spectrometer:
     def grab_monochromator(self):
         """get the intensity at the central wavelength"""
         return self._get_data_0D()
+
+    def wait_photodiode_monochromator(self):
+        QThread.msleep(100)  # wait 1s
+        self._0D_data = self._get_data_0D()
+        return 0
+
+    def get_async_data_0D(self):
+        return self._0D_data

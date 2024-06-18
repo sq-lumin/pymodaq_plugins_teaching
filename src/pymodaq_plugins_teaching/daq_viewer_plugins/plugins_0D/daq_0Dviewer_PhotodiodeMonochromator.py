@@ -1,4 +1,5 @@
 import numpy as np
+from qtpy.QtCore import QObject, Slot, Signal, QThread
 from pymodaq.utils.daq_utils import ThreadCommand
 from pymodaq.utils.data import DataFromPlugins, DataToExport
 from pymodaq.control_modules.viewer_utility_classes import DAQ_Viewer_base, comon_parameters, main
@@ -35,6 +36,8 @@ class DAQ_0DViewer_PhotodiodeMonochromator(DAQ_Viewer_base):
     params = comon_parameters+[
         ## TODO for your custom plugin: elements to be added here as dicts in order to control your custom stage
         ]
+
+    callback_signal = Signal()
 
     def ini_attributes(self):
         #  TODO declare the type of the wrapper (and assign it to self.controller) you're going to use for easy
@@ -82,6 +85,15 @@ class DAQ_0DViewer_PhotodiodeMonochromator(DAQ_Viewer_base):
                                                                      data=[np.array([0])],
                                                                      dim='Data0D',
                                                                      labels=['Intensity'])]))
+        # init stuff for async operation
+        callback = MyCallback(self.controller.wait_photodiode_monochromator)
+        self.callback_thread = QThread()
+        callback.moveToThread(self.callback_thread)
+        callback.data_sig.connect(self.callback)
+
+        self.callback_signal.connect(callback.wait_for_acquisition)
+        self.callback_thread.callback = callback
+        self.callback_thread.start()
 
         info = "Monochromator OD Viewer Initialized"
         initialized = self.controller.open_communication()
@@ -105,23 +117,23 @@ class DAQ_0DViewer_PhotodiodeMonochromator(DAQ_Viewer_base):
         ## TODO for your custom plugin: you should choose EITHER the synchrone or the asynchrone version following
 
         # synchrone version (blocking function)
-        data_tot = self.controller.grab_monochromator()
-        self.dte_signal.emit(DataToExport(name='photodiode_monochromator',
-                                          data=[DataFromPlugins(name='intensity', data=data_tot,
-                                                                dim='Data0D', labels=['Intensity'])]))
+        #data_tot = self.controller.grab_monochromator()
+        #self.dte_signal.emit(DataToExport(name='photodiode_monochromator',
+        #                                  data=[DataFromPlugins(name='intensity', data=data_tot,
+        #                                                        dim='Data0D', labels=['Intensity'])]))
         #########################################################
 
         # asynchrone version (non-blocking function with callback)
-        # raise NotImplemented  # when writing your own plugin remove this line
+        self.callback_signal.emit()
         # self.controller.your_method_to_start_a_grab_snap(self.callback)  # when writing your own plugin replace this line
         #########################################################
 
     def callback(self):
         """optional asynchrone method called when the detector has finished its acquisition of data"""
-        data_tot = self.controller.your_method_to_get_data_from_buffer()
-        self.dte_signal.emit(DataToExport(name='myplugin',
-                                          data=[DataFromPlugins(name='Mock1', data=data_tot,
-                                                                dim='Data0D', labels=['dat0', 'data1'])]))
+        data_tot = self.controller.get_async_data_0D()
+        self.dte_signal.emit(DataToExport(name='photodiode_monochromator',
+                                          data=[DataFromPlugins(name='intensity', data=data_tot,
+                                                                dim='Data0D', labels=['Intensity'])]))
 
     def stop(self):
         """Stop the current grab hardware wise if necessary"""
@@ -130,6 +142,20 @@ class DAQ_0DViewer_PhotodiodeMonochromator(DAQ_Viewer_base):
         self.emit_status(ThreadCommand('Update_Status', ['Some info you want to log']))
         ##############################
         return ''
+
+
+class MyCallback(QObject):
+
+    data_sig = Signal()
+    def __init__(self,wait_fn):
+        super().__init__()
+        self.wait_fn = wait_fn
+
+    def wait_for_acquisition(self):
+        err = self.wait_fn()
+
+        if err != -1:
+            self.data_sig.emit()
 
 
 if __name__ == '__main__':
